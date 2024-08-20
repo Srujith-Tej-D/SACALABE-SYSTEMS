@@ -95,14 +95,17 @@ Data set Link :- https://www.kaggle.com/c/microsoft-malware-prediction/data
        17. start spark as master and worker in vm1 and as worker in vm2
               cd /usr/local/spark
               sbin/start-master.sh ( VM1 )
-              sbin/start-worker.sh spark://hadoop-vm-1:7077 ( VM1 & VM2 )
+              sbin/start-worker.sh spark://master-vm:7077 ( VM1 & VM2 )
 
        18. access ui's and check 
 
            hadoop http://external_ip:9870
            spark  http://external_ip:8080
 
-       19. run get_and_ingest_data.sh , this will get datasets from internet and ingest to hadoop
+       19. Install kagle and download the Data sets through CLI 
+       pip install kaggle
+       kaggle --version
+       kaggle competitions download -c microsoft-malware-prediction
 
 
 Note : Modify the Vm specfic config changes carefully by referring the uploaded files 
@@ -117,13 +120,13 @@ Hadoop :-
  bin/hdfs namenode -format
 
  hdfs dfs -ls /
- hdfs dfs -mkdir /data-intesinve
- hdfs dfs -put airquality.csv /data-intesinve/
- hdfs fsck /data-intesinve/airquality.csv -files -blocks -locations
+ hdfs dfs -mkdir /microsoft
+ hdfs dfs -put train.csv /microsoft/
+ hdfs fsck /data-intesinve/train.csv -files -blocks -locations
 
 spark :- 
  sbin/start-master.sh
- sbin/start-worker.sh spark://hadoop-vm-1:7077
+ sbin/start-worker.sh spark://master-vm:7077
 
 Jupyter :- Install jupyter as a service and access  the UI in browser by using external IP
 
