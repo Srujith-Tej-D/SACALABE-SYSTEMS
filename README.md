@@ -1,111 +1,95 @@
 # SACALABE-SYSTEMS
 
-GitHub Link :-  https://github.com/Srujith-Tej-D/SACALABE-SYSTEMS
-Data set Link :- https://www.kaggle.com/c/microsoft-malware-prediction/data
+   1. Create ubuntu VM's (if cluster)
 
--->  Installation Requirements:
-       1. Hadoop 3.3.6
-       2. Apache Spark
-       3. JAVA , Open-JDK & default-JRE
-       3. Python
-       4. Jupyter
-       4. pip
-       5. pip install pandas
-       6. pip install plotly
-       7. pip installpyspark
+   2. sudo apt update
+      sudo apt install default-jre
+      sudo apt install default-jdk
 
----> Setup Instructions: 
+  3. modify the /etc/hosts file remove the localhost add hostname beside ip 
 
-       1. Create ubuntu VM's (if cluster)
+  4. sudo groupadd hadoop
+     sudo useradd -ghadoop hduser -m -s /bin/bash
+     sudo passwd hduser
+     sudo usermod -aG sudo hduser
+     su - hduser
+     ssh-keygen -t rsa -P '' -f ~/.ssh/id_rsa
+     cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
+     ssh-copy-id username@hostname ( hostname of other vms )
+     
+   5. sudo vim /etc/sysctl.conf
+      Add the below at the end of file
 
-       2. sudo apt update
-          sudo apt install default-jre
-          sudo apt install default-jdk
+      net.ipv6.conf.all.disable_ipv6=1
+      net.ipv6.conf.default.disable_ipv6=1
+      net.ipv6.conf.lo.disable_ipv6=1
 
-      3. modify the /etc/hosts file remove the localhost add hostname beside ip 
+   6. sudo sysctl -p
 
-      4. sudo groupadd hadoop
-         sudo useradd -ghadoop hduser -m -s /bin/bash
-         sudo passwd hduser
-         sudo usermod -aG sudo hduser
-         su - hduser
-         ssh-keygen -t rsa -P '' -f ~/.ssh/id_rsa
-         cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
-         ssh-copy-id username@hostname ( hostname of other vms )
-         
-       5. sudo vim /etc/sysctl.conf
-          Add the below at the end of file
+   7.  cd /home/hduser
+       curl -O https://dlcdn.apache.org/hadoop/common/hadoop-3.3.6/hadoop-3.3.6.tar.gz
+       curl -O https://www.apache.org/dyn/closer.lua/spark/spark-3.5.1/spark-3.5.1-bin-hadoop3.tgz
 
-          net.ipv6.conf.all.disable_ipv6=1
-          net.ipv6.conf.default.disable_ipv6=1
-          net.ipv6.conf.lo.disable_ipv6=1
+   8. extract the tar files in in /usr/local/ and create symlinks as hadoop and spark
 
-       6. sudo sysctl -p
+   9. sudo chown -R hduser:hadoop hadoop*
+      sudo chown -R hduser:hadoop spark*
 
-       7.  cd /home/hduser
-           curl -O https://dlcdn.apache.org/hadoop/common/hadoop-3.4.0/hadoop-3.4.0.tar.gz
-           curl -O https://www.apache.org/dyn/closer.lua/spark/spark-3.5.1/spark-3.5.1-bin-hadoop3.tgz
+   10. vim /home/hduser/.bashrc 
+       Add the following at the end of file 
+       export HADOOP_CLASSPATH=/usr/lib/jvm/java-11-openjdkamd64/lib/tools.jar:/usr/local/hadoop/bin/hadoop
+       export HADOOP_MAPRED_HOME=/usr/local/hadoop
+       export HADOOP_HDFS_HOME=/usr/local/hadoop
+       export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
+       export PATH=$PATH:.:/usr/lib/jvm/java-11-openjdk-amd64/bin:/usr/local/hadoop/bin
+       export HADOOP_CONF_DIR=/usr/local/hadoop/etc/hadoop
+       export LD_LIBRARY_PATH=/usr/local/hadoop/lib/native:$LD_LIBRARY_PATH
+       export SPARK_HOME=/usr/local/spark
+       export PYSPARK_PYTHON=python3
+       export PATH=$SPARK_HOME/bin:$PATH
 
-       8. extract the tar files in in /usr/local/ and create symlinks as hadoop and spark
+   11. source /home/hduser/.bashrc 
 
-       9. sudo chown -R hduser:hadoop hadoop*
-          sudo chown -R hduser:hadoop spark*
+   12. refer the configuration files uploaded for both vm1 and vm2 
+       in this path /usr/local/hadoop/etc/hadoop/
+       Refer and modify the following
+                                       * Core-site.xml
+                                       * hdfs-site.xml
+                                       * mapred-site.xml
+      
+       Note: I have uploaded all those conf file to this repo 
 
-       10. vim /home/hduser/.bashrc 
-           Add the following at the end of file 
-           export HADOOP_CLASSPATH=/usr/lib/jvm/java-11-openjdkamd64/lib/tools.jar:/usr/local/hadoop/bin/hadoop
-           export HADOOP_MAPRED_HOME=/usr/local/hadoop
-           export HADOOP_HDFS_HOME=/usr/local/hadoop
-           export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
-           export PATH=$PATH:.:/usr/lib/jvm/java-11-openjdk-amd64/bin:/usr/local/hadoop/bin
-           export HADOOP_CONF_DIR=/usr/local/hadoop/etc/hadoop
-           export LD_LIBRARY_PATH=/usr/local/hadoop/lib/native:$LD_LIBRARY_PATH
-           export SPARK_HOME=/usr/local/spark
-           export PYSPARK_PYTHON=python3
-           export PATH=$SPARK_HOME/bin:$PATH
+    13. add "export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64" to hadoop-env.sh file 
 
-       11. source /home/hduser/.bashrc 
+    14. create required folders:
+                        mkdir ~/tmp
+                        mkdir ~/hdfs
+                        chmod 750 ~/hdfs
 
-       12. refer the configuration files uploaded for both vm1 and vm2 
-           in this path /usr/local/hadoop/etc/hadoop/
-           Refer and modify the following
-                                           * Core-site.xml
-                                           * hdfs-site.xml
-                                           * mapred-site.xml
-          
-           Note: I have uploaded all those conf file to this repo 
+    15. format name node and start dfs and yarn 
+                 cd /usr/local/hadoop
+                 bin/hdfs namenode -format ( Master and worker nodes )
+                 sbin/start-dfs.sh ( Master node )
+                 sbin/start-yarn.sh ( Master node )
+                 hdfs --daemon start datanode ( Worker node )
 
-        13. add "export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64" to hadoop-env.sh file 
+   16. modify spark-env.sh with internal and external IP of the vm by refereeing the uploaded file
+       file path /usr/local/spark/conf
 
-        14. create required folders:
-                            mkdir ~/tmp
-                            mkdir ~/hdfs
-                            chmod 750 ~/hdfs
+   17. start spark as master and worker in vm1 and as worker in vm2
+          cd /usr/local/spark
+          sbin/start-master.sh ( Master node  )
+          sbin/start-worker.sh spark://master-vm:7077 ( Master and worker nodes )
 
-        15. format name node and start dfs and yarn 
-                     cd /usr/local/hadoop
-                     bin/hdfs namenode -format ( Master and worker nodes )
-                     sbin/start-dfs.sh ( Master node )
-                     sbin/start-yarn.sh ( Master node )
-                     hdfs --daemon start datanode ( Worker node )
+   18. access ui's and check 
 
-       16. modify spark-env.sh with internal and external IP of the vm by refereeing the uploaded file
-           file path /usr/local/spark/conf
+       hadoop http://external_ip:9870
+       spark  http://external_ip:8080
 
-       17. start spark as master and worker in vm1 and as worker in vm2
-              cd /usr/local/spark
-              sbin/start-master.sh ( VM1 )
-              sbin/start-worker.sh spark://master-vm:7077 ( VM1 & VM2 )
-
-       18. access ui's and check 
-
-           hadoop http://external_ip:9870
-           spark  http://external_ip:8080
-
-       19. Install kagle and download the Data sets through CLI 
-       pip install kaggle
-       kaggle --version
-       kaggle competitions download -c microsoft-malware-prediction
+   19. Install kagle and download the Data sets through CLI 
+   pip install kaggle
+   kaggle --version
+   kaggle competitions download -c microsoft-malware-prediction
 
 
 Note : Modify the Vm specfic config changes carefully by referring the uploaded files 
