@@ -3,16 +3,15 @@
 GitHub Link :-  https://github.com/Srujith-Tej-D/SACALABE-SYSTEMS
 Data set Link :- https://www.kaggle.com/c/microsoft-malware-prediction/data
 
--->  Installation Requirements:
-      1. Hadoop 3.3.6
-      2. Apache Spark
-      3. JAVA , Open-JDK & default-JRE
-      4. Python
-      5. Jupyter
-      6. pip
-      7. pip install pandas
-      8. pip install plotly
-      9. pip installpyspark
+--> Installation Requirements:
+       1. Hadoop 3.4.0
+       2. Apache Spark
+       3. JAVA , Open-JDK & default-JRE
+       4. Python
+       5. pip
+       6. pip install pandas
+       7. pip install plotly
+       8. pip installpyspark
 
 ---> Setup Instructions: 
 
